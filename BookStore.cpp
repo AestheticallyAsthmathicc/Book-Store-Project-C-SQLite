@@ -62,13 +62,38 @@ class Book {
         // int price;
         // void addBook() {
         //     cout << "Enter the ID of the book"
-        // }
+        // }    
 
+        void displaySearch(string searchColumn) {
+            sqlite3* database; 
+            sqlite3_open("includes/database.db", &database); 
+            string searchQuery;
+            string data;
+
+            cout << "Enter " + searchColumn + " to search: ";
+            cin >> searchQuery;          
         
+            string sqlQuery = "SELECT * FROM books WHERE " + searchColumn + " like '%" + searchQuery + "%';"; 
 
-
-
+            int rc = sqlite3_exec(database, sqlQuery.c_str(), callback, (void*)data.c_str(), NULL); 
         
+            if (rc != SQLITE_OK) 
+                cerr << "No such author exists!" << endl;
+        }
+
+        static int callback(void* data, int argc, char** argv, char** azColName) { 
+            int i;
+
+            cout << "\n\nBook " << i << "\n";
+            for (i = 0; i < argc; i++) {
+                if(i == 0) continue;
+
+                cout << azColName[i] << ": " << argv[i] << endl;
+            }
+        
+            cout << "\n\n"; 
+            return 0; 
+        } 
         
 };
 
@@ -115,7 +140,7 @@ class Customer : public Person {
 
 };
 
-class Admin : public Person{
+class Admin : public Person, public Book{
     public:
 
         bool adminLoginVerify() {
@@ -133,11 +158,20 @@ class Admin : public Person{
 
                 cout << "Welcome to Book Store's Admin Login\n";
                 cout << "What would you like to do?\n";
-                cout << "1. Search Books\t2. Add Book\n3. Delete Book\t4. Update Book\n5. Log Out";
+                cout << "1. Search Books\t2. Add Book\n3. Delete Book\t4. Update Book\n5. Log Out\n";
                 cin >> menuChoice;
 
                 if(menuChoice == 1) {
-                    cout << "1";
+                    int searchOption;
+                    cout << "Would you like to search via: \n";
+                    cout << "1. Book Title\t2. Book Author\n3. Book ISBN\n";
+                    cin >> searchOption;
+
+                    if(searchOption == 1) displaySearch("title");
+                    else if(searchOption) displaySearch("author");
+                    else if(searchOption) displaySearch("ISBN");
+                    else cout << "You entered the wrong option!";
+
                 } else if(menuChoice == 2) {
                     cout << "2";
                 } else if(menuChoice == 3) {
@@ -157,11 +191,10 @@ class Admin : public Person{
 };
 
 int main() {
-
+    sqlite3* database;
     int mainMenuChoice;
     string username, password;
     ifstream dbCheck("includes/database.db");
-    sqlite3* database;
     int exit = sqlite3_open("includes/database.db", &database);
 
     if(!(dbCheck)) {
@@ -217,6 +250,7 @@ int main() {
     }
 
     dbCheck.close();
+    sqlite3_close(database);
 
     cout << "Welcome to Mooney's Book Store!\n";
     cout << "-------------------------------\n";
@@ -247,8 +281,6 @@ int main() {
         } while(!(admin.adminLoginVerify()));
 
     }
-
-    sqlite3_close(database);
 
     return 0;
 }
