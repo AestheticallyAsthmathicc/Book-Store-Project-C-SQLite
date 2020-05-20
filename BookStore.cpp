@@ -79,6 +79,8 @@ class Book {
         
             if (rc != SQLITE_OK) 
                 cerr << "No such author exists!" << endl;
+
+            sqlite3_close(database);
         }
 
         static int callback(void* data, int argc, char** argv, char** azColName) { 
@@ -244,7 +246,7 @@ int main() {
                 if (exit != SQLITE_OK) { 
                     cerr << "Error inserting into the database!" << endl; 
                     sqlite3_free(errorMSG); 
-                } 
+                }
             }
         }   
     }
@@ -268,7 +270,6 @@ int main() {
             cout << "Pleaes Enter your admin login:\n";
             cout << "Username: "; cin >> username;
             cout << "Password: "; cin >> password;
-
             
             admin.setLogin(username, password, 1);
 
