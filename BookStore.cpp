@@ -1,6 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
+#include <limits>
+#include <vector>
 #include <sqlite3.h>
 
 using namespace std;
@@ -19,6 +22,17 @@ class Book {
         int price;
 
     public:
+
+        Book() {
+            setID(0);
+            setTitle("NULL");
+            setAuthor("NULL");
+            setISBN("NULL");
+            setPubName("NULL");
+            setPubDOB("NULL");
+            setVolNumber(0);
+            setPrice(0);
+        }
 
         //setters
         void setID(int id) {
@@ -53,12 +67,70 @@ class Book {
             this->price = price;
         }
 
+        void setBook(int id, string title, string author, string ISBN, string pubName, string pubDOB, int volNumber, int price) {
+            setID(id);
+            setTitle(title);
+            setAuthor(author);
+            setISBN(ISBN);
+            setPubName(pubName);
+            setPubDOB(pubDOB);
+            setVolNumber(volNumber);
+            setPrice(price);
+        }
+
+        //getters
+
+        int getID() {
+            return this->id;
+        }
+
+        string getTitle() {
+            return this->title;
+        }
+
+        string getAuthor() {
+            return this->author;
+        }
+
+        string getISBN() {
+            return this->ISBN;
+        }
+
+        string getPubName() {
+            return this->pubName;
+        }
+
+        string getPubDOB() {
+            return this->pubDOB;
+        }
+
+        int getVolNumber() {
+            return this->volNumber;
+        }
+
+        int getPrice() {
+            return this->price;
+        }
+
         //methods
+
+        void displayBook() {
+            cout << "\nBook ID: \t\t" << getID();
+            cout << "\nBook Title: \t\t" << getTitle();
+            cout << "\nBook Author: \t\t" << getAuthor();
+            cout << "\nBook ISBN: \t\t" << getISBN(); 
+            cout << "\nBook Publisher: \t" << getPubName();
+            cout << "\nBook Publishing Date: \t" << getPubName();
+            cout << "\nBook Volume number: \t" << getVolNumber();
+            cout << "\nBook Price: \t\t" << getPrice();
+        }
+
         void addBook() {
 
             string bookTitle, bookAuthor, bookISBN, bookPubName, bookPubDOB;
             int bookVolNumber, bookPrice;
             
+            //FIXME fix the input issue
             cout << "Enter the title of the book: ";
             cin.ignore();
             getline(cin, bookTitle);
@@ -123,6 +195,7 @@ class Book {
                 cout << "Invalid input of table ID! Enter integers only.\n";
             }
 
+            //FIXME fix the input issue
             cout << "Enter the new title of the book: ";
             cin.ignore();
             getline(cin, newTitle);
@@ -204,6 +277,7 @@ class Book {
                 cout << "Invalid input of table ID! Enter integers only.\n";
             }
 
+            //FIXME fix the input issue
             cout << "Enter the value you want to replace with: ";
             if(editColumnName == "pubDOB") cout << "(DD MONTH, YYYY)";
             cin.ignore();
@@ -381,46 +455,141 @@ class Person {
         void setPassword(string password) {
             this->password = password;
         }
-        void setAdminStatus(bool Adminstatus) {
+        void setAdminStatus(bool adminStatus) {
             this->adminStatus = adminStatus;
         }
-        
-        void setLogin(string username, string password, bool adminStatus) {
+
+        void setPerson(string fName, string lName, string username, string password, string adminStatus) {
+            setFName(fName);
+            setLName(lName);
             setUsername(username);
             setPassword(password);
-            setAdminStatus(adminStatus);
+            setAdminStatus (stoi(adminStatus));
         }
 
-};
+        //getters
 
-class Customer : public Person {
-    public:
-        void cusMenu() {
-            cout << "Welcome to the Store";
+        string getFName() {
+            return this->fName;
         }
 
-};
+        string getLName() {
+            return this->lName;
+        }
 
-class Admin : public Person, public Book{
-    public:
+        string getUsername() {
+            return this->username;
+        }
 
-        bool adminLoginVerify() {
-            if(!(username == "1" && password == "1")) {
-                return 0;
-            } else {
-                return 1;
+        string getPassword() {
+            return this->password;
+        }
+
+        bool getAdminStatus() {
+            return this->adminStatus;
+        }
+
+        //methods
+        
+        int verifyLogin(string username, string password) {
+
+            string user[6];
+            sqlite3* database;
+            sqlite3_open("includes/database.db", &database);
+            struct sqlite3_stmt *userStatement;
+        
+            string sqlQuery = "SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "';"; 
+
+            int result = sqlite3_prepare_v2(database, sqlQuery.c_str(), -1, &userStatement, NULL); 
+            
+            if(result == SQLITE_OK) {
+                if (sqlite3_step(userStatement) == SQLITE_ROW) {
+                    for(int i = 0; i < 6; i++) {
+                        //this returns a 'unsigned const *' so i have to convert it into a string to be able to store it
+                        user[i] = string(reinterpret_cast<const char*>(sqlite3_column_text(userStatement, i)));
+                    }
+                } else {
+                    return 0;
+                }
+            }   
+            sqlite3_finalize(userStatement);
+            sqlite3_close(database);
+
+            if(user[5] == "0") {
+                return 2;
             }
+
+            setPerson(user[1], user[2], user[3], user[4], user[5]);
+
+            return 1;
+        }
+};
+
+class Customer : public Person, public Book {
+    private:
+        Book book[5][25];
+        int totalPrice[5];
+
+    public:
+
+        bool verifyLogin(string username, string password) {
+
+            string user[6];
+            sqlite3* database;
+            sqlite3_open("includes/database.db", &database);
+            struct sqlite3_stmt *userStatement;
+        
+            string sqlQuery = "SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "';"; 
+
+            int result = sqlite3_prepare_v2(database, sqlQuery.c_str(), -1, &userStatement, NULL); 
+            
+            if(result == SQLITE_OK) {
+                if (sqlite3_step(userStatement) == SQLITE_ROW) {
+                    for(int i = 0; i < 6; i++) {
+                        //this returns a 'unsigned const *' so i have to convert it into a string to be able to store it
+                        user[i] = string(reinterpret_cast<const char*>(sqlite3_column_text(userStatement, i)));
+                    }
+                } else {
+                    return 0;
+                }
+            }   
+            sqlite3_finalize(userStatement);
+            sqlite3_close(database);
+
+            setPerson(user[1], user[2], user[3], user[4], user[5]);
+
+            return 1;
         }
 
-        void adminMenu() {
-            int menuChoice;
+        bool registerCus(string fName, string lName, string username, string password) {
+            sqlite3* database; 
+            char* errorMSG;
+            int exit = sqlite3_open("includes/database.db", &database);
+        
+            string sqlInsert = "INSERT INTO users('firstName', 'lastName', 'username', 'password', 'adminStatus')"
+                               "VALUES ('" + fName + "', '" + lName + "', '" + username + "', '" + password + "', 0);";
 
+            exit = sqlite3_exec(database, sqlInsert.c_str(), NULL, 0, &errorMSG);
+
+            if (exit != SQLITE_OK) { 
+                cerr << "\n\nError inserting into the database!\n\n"; 
+                sqlite3_free(errorMSG); 
+            } else {
+                cout << "\n\nAccount registered succesfully!\n\n";
+            }
+
+            sqlite3_close(database);
+
+            return 0;
+        }         
+
+        void cusMenu() {
+            int menuChoice;
             do {
 
-                cout << "\n\n";
-                cout << "Welcome to Book Store's Admin Login\n";
-                cout << "What would you like to do?\n";
-                cout << "1. Search Books\t2. Add Book\n3. Edit Book\t4. Delete Book\n5. Log Out\n";
+                cout << "\n\nWelcome " + getFName() + " " + getLName() + " to Mooney's Book Store!\n";
+                cout << "What would you like to do: \n";
+                cout << "1. Search Books \t2. Add to Cart\n3. Check Cart\t\t 4. Log Out\n";
                 cin >> menuChoice;
 
                 if(menuChoice == 1) {
@@ -434,35 +603,178 @@ class Admin : public Person, public Book{
                     else if(searchOption) displaySearch("author");
                     else if(searchOption) displaySearch("ISBN");
                     else cout << "You entered the wrong option!";
-
-                } else if(menuChoice == 2) {
-                    addBook();
-                } else if(menuChoice == 3) {
                     
-                    int editOption;
-                    cout << "What would you like to edit: \n";
-                    cout << "1. Title \t2. Author \t3. ISBN \t4. Publisher Name\n5. Publishing Date \t\t6. Volume \t7.Price \t8.Complete Entry";
-                    cin >> editOption;
-
-                    if(editOption == 1) editBook("title");
-                    else if(editOption == 2) editBook("author");
-                    else if(editOption == 3) editBook("ISBN");
-                    else if(editOption == 4) editBook("pubName");
-                    else if(editOption == 5) editBook("pubDOB");
-                    else if(editOption == 6) editBook(6);
-                    else if(editOption == 7) editBook(7);
-                    else if(editOption == 8) editBook();
-                    else cout << "You entered the wrong option!";
-
+                } else if(menuChoice == 2) {
+                    addToCart();
+                } else if(menuChoice == 3) {
+                    checkCart();
                 } else if(menuChoice == 4) {
-                    deleteBook();
-                } else if(menuChoice == 5) {
                     break;
                 } else {
                     cout << "You entered a wrong option! Try agian!\n";
                     continue;
                 }
+
             } while(menuChoice);
+        }
+
+        void addToCart() {
+            int bookID, cartNumber, cartLocation, res;
+            do {
+
+                cout << "\nEnter the ID of the book you would like to add to cart: ";
+                cout << "\n(Enter Book ID as '-1' if you want to leave this menu.)\n";
+                cin >> bookID;
+
+                if(bookID == -1) {
+                    break;
+                }
+
+                cout << "\nWhich cart would you like to add this book to: ";
+                cin >> cartNumber;
+
+                if(cartNumber < 1 || cartNumber > 5) {
+                    cout << "\nYou entered wrong cart number!\n";    
+                    continue;
+                }
+
+                cout << "\nWhich cart location would you like to put this book into (1 to 25 range): ";
+                cin >> cartLocation;
+
+                if(cartLocation < 1 || cartLocation > 25) {
+                    cout << "\nYou entered wrong cart location!\n";    
+                    continue;
+                }
+
+                res = pushIntoCartArray(bookID, cartNumber, cartLocation);
+
+                if(res) {
+                    cout << "\nBook added to cart!\n";
+                    continue;
+                } else {
+                    cout << "\nBook ID you entered doesn't exist!\n";
+                    continue;
+                }
+
+            } while (cartNumber);
+        }
+
+        bool pushIntoCartArray(int bookID, int cartNumber, int cartLocation) {
+            string bookArray[8];
+            sqlite3* database;
+            sqlite3_open("includes/database.db", &database);
+            struct sqlite3_stmt *userStatement;
+            
+            string sqlQuery = "SELECT * FROM books WHERE id = '" + to_string(bookID) + "';"; 
+
+            int result = sqlite3_prepare_v2(database, sqlQuery.c_str(), -1, &userStatement, NULL); 
+                
+            if(result == SQLITE_OK) {
+                if (sqlite3_step(userStatement) == SQLITE_ROW) {
+                    for(int i = 0; i < 8; i++) {
+                        //this returns a 'unsigned const *' so i have to convert it into a string to be able to store it
+                        bookArray[i] = string(reinterpret_cast<const char*>(sqlite3_column_text(userStatement, i)));
+                    }
+                } else {
+                    return 0;
+                }
+            }   
+
+            sqlite3_finalize(userStatement);
+            sqlite3_close(database);
+
+            book[cartNumber][cartLocation].setBook(stoi(bookArray[0]), bookArray[1], bookArray[2], bookArray[3], bookArray[4], bookArray[5], stoi(bookArray[6]), stoi(bookArray[7]));
+
+            return 1;   
+        }
+
+        void checkCart() {
+            int cartNumber;
+
+            do {
+                cout << "\n\nYou have 5 carts with the limit of 25 books per each cart!\n";
+                cout << "Enter any number outside the limit from 1 to 5 to go back to customer menu!\n";
+                cout << "Which cart would you like to check?\n";
+                cin >> cartNumber;
+
+                if(cartNumber < 1 || cartNumber > 5) {
+                    cout << "\nGoing back to customer main menu!\n";    
+                    break;
+                }
+
+                for(int i = 0; i < 25; i++) {
+
+                    if(book[cartNumber][i].getTitle() == "NULL") continue;
+
+                    cout << "\nBook: \t\t" << i + 1 << "\n";
+                    book[cartNumber][i].displayBook();
+                    cout << "\n";
+                }
+
+            } while(cartNumber);
+        }
+
+        
+
+};
+
+class Admin : public Person, public Book{
+    public:
+
+        void adminMenu(bool adminStatus) {
+            int menuChoice;
+            if(adminStatus) {
+                do {
+
+                    cout << "\n\n";
+                    cout << "Welcome " + fName + " " + lName + " to Book Store's Admin Menu!\n";
+                    cout << "What would you like to do?\n";
+                    cout << "1. Search Books\t2. Add Book\n3. Edit Book\t4. Delete Book\n5. Log Out\n";
+                    cin >> menuChoice;
+
+                    if(menuChoice == 1) {
+
+                        int searchOption;
+                        cout << "Would you like to search via: \n";
+                        cout << "1. Book Title\t2. Book Author\n3. Book ISBN\n";
+                        cin >> searchOption;
+
+                        if(searchOption == 1) displaySearch("title");
+                        else if(searchOption) displaySearch("author");
+                        else if(searchOption) displaySearch("ISBN");
+                        else cout << "You entered the wrong option!";
+
+                    } else if(menuChoice == 2) {
+                        addBook();
+                    } else if(menuChoice == 3) {
+                        
+                        int editOption;
+                        cout << "What would you like to edit: \n";
+                        cout << "1. Title \t2. Author \t3. ISBN \t4. Publisher Name\n5. Publishing Date \t\t6. Volume \t7.Price \t8.Complete Entry";
+                        cin >> editOption;
+
+                        if(editOption == 1) editBook("title");
+                        else if(editOption == 2) editBook("author");
+                        else if(editOption == 3) editBook("ISBN");
+                        else if(editOption == 4) editBook("pubName");
+                        else if(editOption == 5) editBook("pubDOB");
+                        else if(editOption == 6) editBook(6);
+                        else if(editOption == 7) editBook(7);
+                        else if(editOption == 8) editBook();
+                        else cout << "You entered the wrong option!";
+
+                    } else if(menuChoice == 4) {
+                        deleteBook();
+                    } else if(menuChoice == 5) {
+                        break;
+                    } else {
+                        cout << "You entered a wrong option! Try agian!\n";
+                        continue;
+                    }
+                } while(menuChoice);
+            } else {
+                cout << "This account does not have admin privileges!";
+            }
             
         }
 
@@ -539,25 +851,95 @@ int main() {
     cin >> mainMenuChoice;
 
     if(mainMenuChoice == 1) {
-        cout << "TDC";
+        int customerOption, res = 0;
+        Customer cus;
+        do {
+
+            cout << "\n\nWould you like to: \n";
+            cout << "1. Login \t2. Register\n";
+            cin >> customerOption;
+
+            if(customerOption == 1) {
+
+                    cout << "Pleaes Enter your admin login:\n";
+                    cout << "Username: "; cin >> username;
+                    cout << "Password: "; cin >> password;
+                    
+                    res = cus.verifyLogin(username, password);
+
+                    if(res == 1) {
+                        cus.cusMenu();
+                    } else {
+                        cout << "\nThis account does not exist!\n";
+                    }
+
+            } else if (customerOption == 2) {
+
+                //FIXME fix the input issue
+                //TODO account already exists
+
+                string fName, lName, username, password;
+                
+                cout << "Enter your first name: \n";
+                getline(cin, fName);
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                // std::string line;
+                // std::getline(std::cin, line);
+                // std::istringstream(line) >> fName;
+
+                cout << "Enter your last name: \n";
+                getline(cin, lName);
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                // std::getline(std::cin, line);
+                // std::istringstream(line) >> lName;
+
+                cout << "Enter your username: \n";
+                getline(cin, username);
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                // std::getline(std::cin, line);
+                // std::istringstream(line) >> username;
+
+                cout << "Enter your password: \n";
+                getline(cin, password);
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                // std::getline(std::cin, line);
+                // std::istringstream(line) >> password;
+
+                //res = cus.registerCus(fName, lName, username, password);
+
+                cout << "\nFirst Name: " << fName;
+                cout << "\nLast Name: " << lName;
+                cout << "\nUsername: " << username;
+                cout << "\nPassword: " << password;
+
+            } else {
+                cout << "\nYou chose a wrong option!\n";
+            }
+
+        } while(!res);
+
     } else if (mainMenuChoice == 2) {
 
         Admin admin;
+        int res;
 
         do {
             cout << "Pleaes Enter your admin login:\n";
             cout << "Username: "; cin >> username;
             cout << "Password: "; cin >> password;
             
-            admin.setLogin(username, password, 1);
+            res = admin.verifyLogin(username, password);
 
-            if(admin.adminLoginVerify()) {
-                admin.adminMenu();
+            if(res == 1) {
+                admin.adminMenu(admin.getAdminStatus());
+            } else if(res == 2) {
+                cout << "\nThis account doesn't have admin privileges!\n";
+                res = 0;
             } else {
-                cout << "Your login was wrong! Try again!\n";
+                cout << "\nThis account does not exist!\n";
             }
 
-        } while(!(admin.adminLoginVerify()));
+        } while(!res);
 
     }
 
