@@ -1,14 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <sstream>
 #include <limits>
-#include <vector>
 #include <sqlite3.h>
 
-using namespace std;
+//TODO change/update the output/cout look
 
-//creating seperate objects to buy books
+using namespace std;
 
 class Book {
     private:
@@ -127,29 +125,29 @@ class Book {
 
         void addBook() {
 
-            string bookTitle, bookAuthor, bookISBN, bookPubName, bookPubDOB;
+            string bookTitle, bookAuthor, bookISBN, bookPubName, bookPubDOB, line;
             int bookVolNumber, bookPrice;
             
-            //FIXME fix the input issue
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             cout << "Enter the title of the book: ";
-            cin.ignore();
             getline(cin, bookTitle);
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             cout << "Enter the author of the book: ";
-            cin.ignore();
             getline(cin, bookAuthor);
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             cout << "Enter the ISBN of the book: ";
-            cin.ignore();
             getline(cin, bookISBN);
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             cout << "Enter the publisher name of the book: ";
-            cin.ignore();
             getline(cin, bookPubName);
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             cout << "Enter the publication date (DD MONTH, YYYY) of the book: ";
-            cin.ignore();
             getline(cin, bookPubDOB);
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             while (cout << "Enter the volume number of the book: " && !(cin >> bookVolNumber)) {
                 cin.clear();
@@ -195,26 +193,25 @@ class Book {
                 cout << "Invalid input of table ID! Enter integers only.\n";
             }
 
-            //FIXME fix the input issue
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             cout << "Enter the new title of the book: ";
-            cin.ignore();
             getline(cin, newTitle);
 
             cout << "Enter the new author of the book: ";
-            cin.ignore();
             getline(cin, newAuthor);
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             cout << "Enter the new ISBN of the book: ";
-            cin.ignore();
-            getline(cin, newISBN);
+            cin >> newISBN;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             cout << "Enter the new publisher name of the book: ";
-            cin.ignore();
             getline(cin, newPubName);
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             cout << "Enter the new publication date (DD MONTH, YYYY) of the book: ";
-            cin.ignore();
             getline(cin, newPubDOB);
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             while (cout << "Enter the new volume number of the book: " && !(cin >> newVolNumber)) {
                 cin.clear();
@@ -242,7 +239,7 @@ class Book {
         
             string sqlUpdate = "UPDATE books SET "
                                "'title' = '" + newTitle + "', "
-                               "'author' = '" + newTitle + "', "
+                               "'author' = '" + newAuthor + "', "
                                "'ISBN' = '" + newISBN + "', "
                                "'pubName' = '" + newPubName + "', "
                                "'pubDOB' = '" + newPubDOB + "', "
@@ -277,10 +274,9 @@ class Book {
                 cout << "Invalid input of table ID! Enter integers only.\n";
             }
 
-            //FIXME fix the input issue
             cout << "Enter the value you want to replace with: ";
             if(editColumnName == "pubDOB") cout << "(DD MONTH, YYYY)";
-            cin.ignore();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             getline(cin, newEdit);
 
             sqlite3* database; 
@@ -528,7 +524,6 @@ class Person {
 class Customer : public Person, public Book {
     private:
         Book book[5][25];
-        int totalPrice[5];
 
     public:
 
@@ -562,25 +557,22 @@ class Customer : public Person, public Book {
         }
 
         bool registerCus(string fName, string lName, string username, string password) {
+
             sqlite3* database; 
             char* errorMSG;
             int exit = sqlite3_open("includes/database.db", &database);
-        
+
             string sqlInsert = "INSERT INTO users('firstName', 'lastName', 'username', 'password', 'adminStatus')"
                                "VALUES ('" + fName + "', '" + lName + "', '" + username + "', '" + password + "', 0);";
 
             exit = sqlite3_exec(database, sqlInsert.c_str(), NULL, 0, &errorMSG);
 
-            if (exit != SQLITE_OK) { 
-                cerr << "\n\nError inserting into the database!\n\n"; 
-                sqlite3_free(errorMSG); 
-            } else {
-                cout << "\n\nAccount registered succesfully!\n\n";
-            }
+            if (exit != SQLITE_OK) {
+                return 0;
+            } 
 
             sqlite3_close(database);
-
-            return 0;
+            return 1;
         }         
 
         void cusMenu() {
@@ -589,7 +581,7 @@ class Customer : public Person, public Book {
 
                 cout << "\n\nWelcome " + getFName() + " " + getLName() + " to Mooney's Book Store!\n";
                 cout << "What would you like to do: \n";
-                cout << "1. Search Books \t2. Add to Cart\n3. Check Cart\t\t 4. Log Out\n";
+                cout << "1. Search Books \t2. Modify Cart\n3. Carts\t\t4. Check Out \n5. Log out\n";
                 cin >> menuChoice;
 
                 if(menuChoice == 1) {
@@ -609,6 +601,8 @@ class Customer : public Person, public Book {
                 } else if(menuChoice == 3) {
                     checkCart();
                 } else if(menuChoice == 4) {
+                    checkOut();
+                } else if(menuChoice == 5) {
                     break;
                 } else {
                     cout << "You entered a wrong option! Try agian!\n";
@@ -618,12 +612,62 @@ class Customer : public Person, public Book {
             } while(menuChoice);
         }
 
+        void checkOut() {
+            int cartNumber, totalPrice = 0, checkoutConfirmation;
+
+            do {
+                totalPrice = 0;
+                cout << "\n\nEnter the cart number (1 to 5) you'd like to check out. \n";
+                cout << "(Enter any number outside the range from 1 to 5 to get back to main menu)\n";
+                cin >> cartNumber;
+
+                cartNumber = cartNumber - 1;
+
+                if(cartNumber < 0 || cartNumber > 4) {
+                    cout << "\nYou entered the wrong cart number!!\n";
+                    continue;
+                } else {
+
+                    for(int i = 0; i < 25; i++) {
+
+                    if(book[cartNumber][i].getTitle() == "NULL") continue;
+
+                        cout << "\nBook: \t\t" << i + 1 << "\n";
+                        book[cartNumber][i].displayBook();
+                        cout << "\n";
+
+                        totalPrice = totalPrice + book[cartNumber][i].getPrice();
+                            
+                    }
+
+                    if(cartNumber == 0) cartNumber = 1;
+                } 
+
+                cout << "\nTotal price of all books is: " << totalPrice << "\n"
+                        "\nAre you sure you want to proceed with this cart?\n"
+                        "Press 1 if you want to check out\n"
+                        "Press 0 or any other number if you want to go back to main menu\n";
+                cin >> checkoutConfirmation;
+
+                if(checkoutConfirmation == 1) {
+                    cout << "\n\nThank you for purchasing these books!\n\n";
+                    break;
+                } else {
+                    break;
+                }
+
+            } while (!checkoutConfirmation);
+
+
+        }
+
         void addToCart() {
             int bookID, cartNumber, cartLocation, res;
             do {
 
                 cout << "\nEnter the ID of the book you would like to add to cart: ";
                 cout << "\n(Enter Book ID as '-1' if you want to leave this menu.)\n";
+                cout << "(Enter Book ID as '0' if you want to empty that cart location.)\n";
                 cin >> bookID;
 
                 if(bookID == -1) {
@@ -633,7 +677,9 @@ class Customer : public Person, public Book {
                 cout << "\nWhich cart would you like to add this book to: ";
                 cin >> cartNumber;
 
-                if(cartNumber < 1 || cartNumber > 5) {
+                cartNumber = cartNumber - 1;
+
+                if(cartNumber < 0 || cartNumber > 4) {
                     cout << "\nYou entered wrong cart number!\n";    
                     continue;
                 }
@@ -641,9 +687,14 @@ class Customer : public Person, public Book {
                 cout << "\nWhich cart location would you like to put this book into (1 to 25 range): ";
                 cin >> cartLocation;
 
-                if(cartLocation < 1 || cartLocation > 25) {
-                    cout << "\nYou entered wrong cart location!\n";    
+                cartLocation = cartLocation - 1;
+                if(cartLocation < 0 || cartLocation > 24) {
+                    cout << "\nYou entered wrong cart location! Choose from 1 to 25!\n";    
                     continue;
+                }
+
+                if(bookID == 0) {
+                    book[cartNumber][cartLocation].setBook(0, "NULL", "NULL", "NULL", "NULL", "NULL", 0, 0);
                 }
 
                 res = pushIntoCartArray(bookID, cartNumber, cartLocation);
@@ -689,27 +740,38 @@ class Customer : public Person, public Book {
         }
 
         void checkCart() {
-            int cartNumber;
+            int cartNumber, totalPrice = 0;
 
             do {
+                totalPrice = 0;
                 cout << "\n\nYou have 5 carts with the limit of 25 books per each cart!\n";
                 cout << "Enter any number outside the limit from 1 to 5 to go back to customer menu!\n";
                 cout << "Which cart would you like to check?\n";
                 cin >> cartNumber;
+                //making it more usable for arrays
+                cartNumber = cartNumber -1;
 
-                if(cartNumber < 1 || cartNumber > 5) {
-                    cout << "\nGoing back to customer main menu!\n";    
+                if(cartNumber < 0 || cartNumber > 4) {
+                    cout << "\nGoing back to customer main menu!\n";
                     break;
+                } else {
+
+                    for(int i = 0; i < 25; i++) {
+
+                        if(book[cartNumber][i].getTitle() == "NULL") continue;
+
+                        cout << "\nBook: \t\t" << i + 1 << "\n";
+                        book[cartNumber][i].displayBook();
+                        cout << "\n";
+
+                        totalPrice = totalPrice + book[cartNumber][i].getPrice();
+                        
+                    }
+
+                    if(cartNumber == 0) cartNumber = 1;
                 }
 
-                for(int i = 0; i < 25; i++) {
-
-                    if(book[cartNumber][i].getTitle() == "NULL") continue;
-
-                    cout << "\nBook: \t\t" << i + 1 << "\n";
-                    book[cartNumber][i].displayBook();
-                    cout << "\n";
-                }
+                cout << "Total price of all books is: " << totalPrice << "\n";
 
             } while(cartNumber);
         }
@@ -750,7 +812,7 @@ class Admin : public Person, public Book{
                         
                         int editOption;
                         cout << "What would you like to edit: \n";
-                        cout << "1. Title \t2. Author \t3. ISBN \t4. Publisher Name\n5. Publishing Date \t\t6. Volume \t7.Price \t8.Complete Entry";
+                        cout << "1. Title \t2. Author \t3. ISBN \t4. Publisher Name\n5. Publishing Date \t\t6. Volume \t7.Price \t8.Complete Entry\n";
                         cin >> editOption;
 
                         if(editOption == 1) editBook("title");
@@ -820,6 +882,8 @@ int main() {
                 cerr << "Error while creating table!" << endl; 
                 sqlite3_free(errorMSG); 
             } else {
+                
+                //TODO update the query
 
                 string sqlInsert =  "INSERT INTO books"
                                     "(title, author, ISBN, pubName, pubDOB, volNumber, price)"
@@ -875,42 +939,30 @@ int main() {
 
             } else if (customerOption == 2) {
 
-                //FIXME fix the input issue
-                //TODO account already exists
+                cout << "\nPlease don't use spaces in the inputs!\n";
 
                 string fName, lName, username, password;
                 
-                cout << "Enter your first name: \n";
-                getline(cin, fName);
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                // std::string line;
-                // std::getline(std::cin, line);
-                // std::istringstream(line) >> fName;
-
-                cout << "Enter your last name: \n";
-                getline(cin, lName);
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                // std::getline(std::cin, line);
-                // std::istringstream(line) >> lName;
-
                 cout << "Enter your username: \n";
-                getline(cin, username);
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                // std::getline(std::cin, line);
-                // std::istringstream(line) >> username;
+                cin >> username;
 
                 cout << "Enter your password: \n";
-                getline(cin, password);
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                // std::getline(std::cin, line);
-                // std::istringstream(line) >> password;
+                cin >> password;
 
-                //res = cus.registerCus(fName, lName, username, password);
+                cout << "Enter your first name: \n";
+                cin >> fName;
 
-                cout << "\nFirst Name: " << fName;
-                cout << "\nLast Name: " << lName;
-                cout << "\nUsername: " << username;
-                cout << "\nPassword: " << password;
+                cout << "Enter your last name: \n";
+                cin >> lName;
+
+                res = cus.registerCus(fName, lName, username, password);
+
+                if(res == 1) {
+                    cout << "\nAccount created succesfuly!\n";
+                    res = 0;
+                } else {
+                    cout << "\nUsername or Password already exists!\n";
+                }
 
             } else {
                 cout << "\nYou chose a wrong option!\n";
