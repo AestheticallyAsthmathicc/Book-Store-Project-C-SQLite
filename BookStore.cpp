@@ -4,8 +4,6 @@
 #include <limits>
 #include <sqlite3.h>
 
-//TODO change/update the output/cout look
-
 using namespace std;
 
 class Book {
@@ -771,7 +769,7 @@ class Customer : public Person, public Book {
                     if(cartNumber == 0) cartNumber = 1;
                 }
 
-                cout << "Total price of all books is: " << totalPrice << "\n";
+                cout << "\nTotal price of all books is: " << totalPrice << "\n";
 
             } while(cartNumber);
         }
@@ -788,30 +786,29 @@ class Admin : public Person, public Book{
             if(adminStatus) {
                 do {
 
-                    cout << "\n\n";
-                    cout << "Welcome " + fName + " " + lName + " to Book Store's Admin Menu!\n";
-                    cout << "What would you like to do?\n";
+                    cout << "\n\nWelcome " + getFName() + " " + getLName() + " to Mooney's Book Store's Admin Menu!\n";
+                    cout << "\nWhat would you like to do?\n";
                     cout << "1. Search Books\t2. Add Book\n3. Edit Book\t4. Delete Book\n5. Log Out\n";
                     cin >> menuChoice;
 
                     if(menuChoice == 1) {
 
                         int searchOption;
-                        cout << "Would you like to search via: \n";
+                        cout << "\nWould you like to search via: \n";
                         cout << "1. Book Title\t2. Book Author\n3. Book ISBN\n";
                         cin >> searchOption;
 
                         if(searchOption == 1) displaySearch("title");
                         else if(searchOption) displaySearch("author");
                         else if(searchOption) displaySearch("ISBN");
-                        else cout << "You entered the wrong option!";
+                        else cout << "\nINVALID INPUT! TRY AGAIN!\n";
 
                     } else if(menuChoice == 2) {
                         addBook();
                     } else if(menuChoice == 3) {
                         
                         int editOption;
-                        cout << "What would you like to edit: \n";
+                        cout << "\nWhat would you like to edit: \n";
                         cout << "1. Title \t2. Author \t3. ISBN \t4. Publisher Name\n5. Publishing Date \t\t6. Volume \t7.Price \t8.Complete Entry\n";
                         cin >> editOption;
 
@@ -823,19 +820,19 @@ class Admin : public Person, public Book{
                         else if(editOption == 6) editBook(6);
                         else if(editOption == 7) editBook(7);
                         else if(editOption == 8) editBook();
-                        else cout << "You entered the wrong option!";
+                        else cout << "\nINVALID INPUT! TRY AGAIN!\n";
 
                     } else if(menuChoice == 4) {
                         deleteBook();
                     } else if(menuChoice == 5) {
                         break;
                     } else {
-                        cout << "You entered a wrong option! Try agian!\n";
+                        cout << "\nINVALID INPUT! TRY AGAIN!\n";
                         continue;
                     }
                 } while(menuChoice);
             } else {
-                cout << "This account does not have admin privileges!";
+                cout << "\nThis account does not have admin privileges!\n";
             }
             
         }
@@ -854,7 +851,7 @@ int main() {
         char* errorMSG;
 
         if(exit) {
-            cerr << "Error opening database: " << sqlite3_errmsg(database) << endl;
+            cerr << "\nError opening database: " << sqlite3_errmsg(database) << endl;
             return -1;
         } else {
 
@@ -882,16 +879,16 @@ int main() {
                 cerr << "Error while creating table!" << endl; 
                 sqlite3_free(errorMSG); 
             } else {
-                
-                //TODO update the query
 
-                string sqlInsert =  "INSERT INTO books"
-                                    "(title, author, ISBN, pubName, pubDOB, volNumber, price)"
+                string sqlInsert =  "INSERT INTO books(title, author, ISBN, pubName, pubDOB, volNumber, price)"
                                     "VALUES ('Lies of Locke Lamora', 'Scott Lynch', '9780553588941', 'Bantam Spectra', '27 June, 2006', 1, 1000),"
                                     "       ('The Blade Itself', 'Joe Abercrombie', '9780575091504', 'Orion Publishing Group', '18 June, 2009', 1, 1000),"
                                     "       ('All the Light We Cannot See', 'Anthony Doerr', '9781476746586', 'Scribner', '12 August, 2014', 1, 800),"
                                     "       ('A Feast for Crows', 'George R.R. Martin', '9780553582024', 'Bantam Books', '17 September, 2011', 1, 1200),"
-                                    "       ('Circe', 'Madeline Miller', '9780316556347', 'Little, Brown and Company', '10 April, 2018', 1, 800);";
+                                    "       ('Circe', 'Madeline Miller', '9780316556347', 'Little, Brown and Company', '10 April, 2018', 1, 800);"
+                                    "\n"
+                                    "INSERT INTO users(firstName, lastName, username, password, adminStatus)"
+                                    "VALUES ('Moeed', 'Rehman', 'admin', 'admin', 1);"
                 
                 exit = sqlite3_exec(database, sqlInsert.c_str(), NULL, 0, &errorMSG);
 
@@ -902,16 +899,37 @@ int main() {
             }
         }
 
-        cout << "Database created successfuly!\n"; 
+        cout << "\nDatabase created successfuly!\n"; 
     }
 
     dbCheck.close();
     sqlite3_close(database);
 
-    cout << "Welcome to Mooney's Book Store!\n";
-    cout << "-------------------------------\n";
-    cout << "Are you a customer or an admin?\n";
-    cout << "1. Customer \t 2. Admin\n";
+
+
+    cout << "    __  ___                           _       \n"
+            "   /  |/  /___  ___   ___  ___  __ __( )___   \n"
+            "  / /|_/ // _ \\/ _ \\ / _ \\/ -_)/ // /|/(_-<   \n"
+            " /_/  /_/ \\___/\\___//_//_/\\__/ \\_, /  /___/   \n"
+            "                              /___/           \n"
+            "\n"
+            "    ___              __         ____ __                  \n"
+            "   / _ ) ___  ___   / /__ ____ / __// /_ ___   ____ ___  \n"
+            "  / _  |/ _ \\/ _ \\ /  '_//___/_\\ \\ / __// _ \\ / __// -_) \n"
+            " /____/ \\___/\\___//_/\\_\\     /___/ \\__/ \\___//_/   \\__/  \n"
+            "\n"
+            "         .---.           .---.        .-.               \n"
+            "     .---|---|   .-.     |   |  .---. |~|    .--.       \n"
+            "  .--|===| D |---|_|--.__| 1 |--|:::| |~|-==-|==|---.   \n"
+            "  |%%|   | U |===| |~~|%%| 9 |--|   |_|~|LORD|  |___|-. \n"
+            "  |  |   | N |===| |==|  | 8 |  |:::|=| |  OF|  |---|=| \n"
+            "  |  |   | E |   |_|__|  | 4 |__|   | | | THE|  |___| | \n"
+            "  |~~|===|---|===|~|~~|%%|~~~|--|:::|=|~|RING|==|---|=| \n"
+            "  ^--^---'---^---^-^--^--^---'--^---^-^-^-==-^--^---^-' \n";
+
+    cout << "\n--------------------------------------------------------\n";
+    cout << "\nAre you a customer or an admin?\n";
+    cout << "1. Customer \t2. Admin\n";
     cin >> mainMenuChoice;
 
     if(mainMenuChoice == 1) {
@@ -919,13 +937,13 @@ int main() {
         Customer cus;
         do {
 
-            cout << "\n\nWould you like to: \n";
+            cout << "\n\nWould you like to:\n";
             cout << "1. Login \t2. Register\n";
             cin >> customerOption;
 
             if(customerOption == 1) {
 
-                    cout << "Pleaes Enter your admin login:\n";
+                    cout << "\nPleaes enter your user login:\n";
                     cout << "Username: "; cin >> username;
                     cout << "Password: "; cin >> password;
                     
@@ -938,8 +956,6 @@ int main() {
                     }
 
             } else if (customerOption == 2) {
-
-                cout << "\nPlease don't use spaces in the inputs!\n";
 
                 string fName, lName, username, password;
                 
@@ -965,7 +981,7 @@ int main() {
                 }
 
             } else {
-                cout << "\nYou chose a wrong option!\n";
+                cout << "\nINVALID INPUT!\n";
             }
 
         } while(!res);
@@ -976,7 +992,7 @@ int main() {
         int res;
 
         do {
-            cout << "Pleaes Enter your admin login:\n";
+            cout << "\nPleaes enter your admin login:\n";
             cout << "Username: "; cin >> username;
             cout << "Password: "; cin >> password;
             
