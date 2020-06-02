@@ -888,7 +888,7 @@ int main() {
                                     "       ('Circe', 'Madeline Miller', '9780316556347', 'Little, Brown and Company', '10 April, 2018', 1, 800);"
                                     "\n"
                                     "INSERT INTO users(firstName, lastName, username, password, adminStatus)"
-                                    "VALUES ('Moeed', 'Rehman', 'admin', 'admin', 1);"
+                                    "VALUES ('Moeed', 'Rehman', 'admin', 'admin', 1);";
                 
                 exit = sqlite3_exec(database, sqlInsert.c_str(), NULL, 0, &errorMSG);
 
