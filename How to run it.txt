@@ -1,0 +1,4 @@
+command to compile:
+g++ -o BookStore.exe BookStore.cpp sqlite3.dll
+
+put file 'sqlite3.h' file in your 'mingw\includes' directory
