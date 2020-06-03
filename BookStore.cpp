@@ -123,7 +123,7 @@ class Book {
 
         void addBook() {
 
-            string bookTitle, bookAuthor, bookISBN, bookPubName, bookPubDOB, line;
+            string bookTitle, bookAuthor, bookISBN, bookPubName, bookPubDOB;
             int bookVolNumber, bookPrice;
             
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -577,7 +577,7 @@ class Customer : public Person, public Book {
             int menuChoice;
             do {
 
-                cout << "\n\nWelcome " + getFName() + " " + getLName() + " to Mooney's Book Store!\n";
+                cout << "\n\nWelcome " + getFName() + " " + getLName() + " to the Book Store!\n";
                 cout << "What would you like to do: \n";
                 cout << "1. Search Books \t2. Modify Cart\n3. Carts\t\t4. Check Out \n5. Log out\n";
                 cin >> menuChoice;
@@ -693,6 +693,8 @@ class Customer : public Person, public Book {
 
                 if(bookID == 0) {
                     book[cartNumber][cartLocation].setBook(0, "NULL", "NULL", "NULL", "NULL", "NULL", 0, 0);
+                    cout << "\nBook has been removed from the cart!\n";
+                    continue;
                 }
 
                 res = pushIntoCartArray(bookID, cartNumber, cartLocation);
@@ -786,7 +788,7 @@ class Admin : public Person, public Book{
             if(adminStatus) {
                 do {
 
-                    cout << "\n\nWelcome " + getFName() + " " + getLName() + " to Mooney's Book Store's Admin Menu!\n";
+                    cout << "\n\nWelcome " + getFName() + " " + getLName() + " to the Book Store's Admin Menu!\n";
                     cout << "\nWhat would you like to do?\n";
                     cout << "1. Search Books\t2. Add Book\n3. Edit Book\t4. Delete Book\n5. Log Out\n";
                     cin >> menuChoice;
@@ -907,13 +909,7 @@ int main() {
 
 
 
-    cout << "    __  ___                           _       \n"
-            "   /  |/  /___  ___   ___  ___  __ __( )___   \n"
-            "  / /|_/ // _ \\/ _ \\ / _ \\/ -_)/ // /|/(_-<   \n"
-            " /_/  /_/ \\___/\\___//_//_/\\__/ \\_, /  /___/   \n"
-            "                              /___/           \n"
-            "\n"
-            "    ___              __         ____ __                  \n"
+    cout << "    ___              __         ____ __                  \n"
             "   / _ ) ___  ___   / /__ ____ / __// /_ ___   ____ ___  \n"
             "  / _  |/ _ \\/ _ \\ /  '_//___/_\\ \\ / __// _ \\ / __// -_) \n"
             " /____/ \\___/\\___//_/\\_\\     /___/ \\__/ \\___//_/   \\__/  \n"
@@ -952,7 +948,7 @@ int main() {
                     if(res == 1) {
                         cus.cusMenu();
                     } else {
-                        cout << "\nThis account does not exist!\n";
+                        cout << "\nThis account does not exist or you entered the wrong information!\n";
                     }
 
             } else if (customerOption == 2) {
@@ -1004,7 +1000,7 @@ int main() {
                 cout << "\nThis account doesn't have admin privileges!\n";
                 res = 0;
             } else {
-                cout << "\nThis account does not exist!\n";
+                cout << "\nThis account does not exist or you entered the wrong information!\n";
             }
 
         } while(!res);
